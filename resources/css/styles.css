@@ -1,0 +1,28 @@
+.tables{
+    @apply min-w-full text-xs divide-y divide-gray-200;
+}
+
+.tables thead{
+    @apply bg-white shadow-md;
+}
+
+.tables th{
+    @apply px-3 py-3 font-bold tracking-wider text-center text-black uppercase;
+}
+
+.tables td{
+    @apply px-1 py-2 text-sm;
+}
+
+.tables tfoot{
+    @apply bg-gray-300;
+}
+
+.form-input{
+    @apply border-gray-300 rounded-md shadow-sm w-full;
+}
+
+.form-input:focus{
+    @apply border-indigo-300 ring ring-indigo-200 ring-opacity-50;
+}
+
