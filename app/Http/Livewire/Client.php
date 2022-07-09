@@ -8,32 +8,26 @@ use Livewire\WithPagination;
 
 class Client extends Component
 {
+
     use WithPagination;
 
     public $search;
     public $edit = false;
     public $type_search = 1;
-    public $selectSearch = 'name';
+    public $selectSearch = 'businessname';
     public $cliente;
     public $typePerson = [
         'Persona Fisica',
         'Persona Moral',
     ];
 
-    protected $listeners = ['render' => 'render'];
+    protected $listeners = ['render' => 'render', 'delete'];
 
     protected $rules = [
-        'cliente.name' => 'required',
-        'cliente.lastname' => 'required',
         'cliente.businessname' => 'required',
-        'cliente.number' => 'required',
         'cliente.email' => 'required',
         'cliente.typePerson' => 'required',
         'cliente.rfc' => 'required',
-        'cliente.state' => 'required',
-        'cliente.city' => 'required',
-        'cliente.colony' => 'required',
-        'cliente.address' => 'required',
         'cliente.cp' => 'required',
     ];
 
@@ -45,15 +39,12 @@ class Client extends Component
     public function updatedTypeSearch($value)
     {
         if ($value == 1) {
-            $this->selectSearch = "name";
+            $this->selectSearch = "businessname";
             $this->search = "";
         } elseif ($value == 2) {
             $this->selectSearch = "rfc";
             $this->search = "";
         } elseif ($value == 3) {
-            $this->selectSearch = "number";
-            $this->search = "";
-        } elseif ($value == 4) {
             $this->selectSearch = "email";
             $this->search = "";
         }
@@ -81,6 +72,7 @@ class Client extends Component
         $this->edit = false;
 
         $this->emit('render');
+        $this->emit('alert', 'Los datos del cliente se actualizaron correctamente');
     }
 
     public function delete(Cliente $cliente)

@@ -12,24 +12,14 @@
             {!! Form::open() !!}
             <div class="grid grid-cols-2 gap-5">
                 <div>
-                    <x-jet-label>Categoria:</x-jet-label>
-                    {!! Form::select('categoria_id', $categorias, null, ['wire:model' => 'categoria_id', 'placeholder' => 'Elija una opción', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="categoria_id"></x-jet-input-error>
-                </div>
-                <div>
                     <x-jet-label>Nombre del producto:</x-jet-label>
                     {!! Form::text('name', null, ['wire:model' => 'name', 'class' => 'form-input', 'placeholder' => 'Nombre del producto', 'class' => 'form-input']) !!}
                     <x-jet-input-error for="name"></x-jet-input-error>
                 </div>
                 <div>
-                    <x-jet-label>Slug:</x-jet-label>
-                    {!! Form::text('slug', null, ['wire:model' => 'slug', 'disabled', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="slug" />
-                </div>
-                <div>
-                    <x-jet-label>Descripción:</x-jet-label>
-                    {!! Form::text('description', null, ['wire:model' => 'description', 'placeholder' => 'Descripción del producto', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="description"></x-jet-input-error>
+                    <x-jet-label>Clave del producto:</x-jet-label>
+                    {!! Form::select('key_product', $keys_products, null, ['wire:model' => 'key_product', 'placeholder' => 'Elija una opción', 'class' => 'form-input']) !!}
+                    <x-jet-input-error for="key_product"></x-jet-input-error>
                 </div>
                 <div>
                     <x-jet-label>Costo:</x-jet-label>

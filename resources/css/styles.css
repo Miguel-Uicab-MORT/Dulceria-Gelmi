@@ -1,9 +1,9 @@
 .tables{
-    @apply min-w-full text-xs divide-y divide-gray-200;
+    @apply min-w-full text-xs divide-y divide-gray-200 rounded-lg;
 }
 
 .tables thead{
-    @apply bg-white shadow-md;
+    @apply bg-white rounded-lg shadow-lg;
 }
 
 .tables th{
@@ -19,7 +19,7 @@
 }
 
 .form-input{
-    @apply border-gray-300 rounded-md shadow-sm w-full;
+    @apply w-full border-gray-300 rounded-md shadow-sm;
 }
 
 .form-input:focus{

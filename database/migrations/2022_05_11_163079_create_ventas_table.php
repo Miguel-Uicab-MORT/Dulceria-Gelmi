@@ -20,10 +20,18 @@ class CreateVentasTable extends Migration
             $table->float('costo');
             $table->float('total');
             $table->float('ganancia');
+            $table->float('efectivo');
+            $table->float('debito');
+            $table->float('credito');
             $table->float('recibido');
             $table->float('cambio');
+
             $table->json('content');
-            $table->enum('facturable', [Venta::Faturable, Venta::Nofaturable])->default(Venta::Faturable);
+
+            $table->enum('facturable', [Venta::Facturable, Venta::Nofacturable])->default(Venta::Facturable);
+            $table->enum('typePayment', [Venta::Efectivo, Venta::Credito, Venta::Debito]);
+
+            $table->boolean('facturado')->default(false);
 
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 

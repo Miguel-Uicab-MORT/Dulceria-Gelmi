@@ -3,36 +3,31 @@
 namespace App\Http\Livewire;
 
 use App\Exports\BarcodeExport;
-use App\Models\Categoria;
 use App\Models\Producto;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
-use Mike42\Escpos\Printer;
 
 class Inventory extends Component
 {
     use WithPagination;
 
     public $search;
-    public $producto, $categorias, $statusList, $barcode;
+    public $producto, $statusList, $barcode;
     public $edit = false;
     public $type_search = 1;
     public $selectSearch = 'id';
 
-    protected $listeners = ['render' => 'render'];
+    protected $listeners = ['render' => 'render', 'delete'];
 
     protected $rules = [
         'producto.barcode' => 'required',
         'producto.name' => 'required',
-        'producto.description' => 'required',
-        'producto.slug' => 'required',
+        'producto.key_product' => 'required',
         'producto.stock' => 'required',
         'producto.cost' => 'required',
         'producto.price' => 'required',
         'producto.status' => 'required',
-        'producto.categoria_id' => 'required'
     ];
 
     public function updatingSearch()
@@ -50,9 +45,6 @@ class Inventory extends Component
             $this->search = "";
         }elseif ($value == 3) {
             $this->selectSearch = "name";
-            $this->search = "";
-        }elseif ($value == 4) {
-            $this->selectSearch = "description";
             $this->search = "";
         }
     }
@@ -80,6 +72,7 @@ class Inventory extends Component
         $this->edit = false;
 
         $this->emit('render');
+        $this->emit('alert', 'El producto se actualizo correctamente');
     }
 
     public function delete(Producto $producto)
@@ -91,30 +84,13 @@ class Inventory extends Component
 
     public function mount()
     {
-        $this->categorias = Categoria::pluck('name', 'id');
         $this->statusList = ['1' => 'Activo', '2' => 'Inactivo'];
-    }
-
-    public function printBarcode(Producto $producto)
-    {
-        $nombreImpresora = "MINIPRINT";
-        $connector = new WindowsPrintConnector($nombreImpresora);
-        $impresora = new Printer($connector);
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->text("-------------------------------\n");
-        if (strlen($producto->barcode) == 8) {
-            $impresora->text($producto->name . "\n");
-            $impresora->barcode($producto->barcode, Printer::BARCODE_JAN8);
-        } elseif (strlen($producto->barcode) == 13) {
-            $impresora->text($producto->name . "\n");
-            $impresora->barcode($producto->barcode, Printer::BARCODE_JAN13);
-        } elseif (strlen($producto->barcode) == 12) {
-            $impresora->text($producto->name . "\n");
-            $impresora->barcode($producto->barcode, Printer::BARCODE_UPCA);
-        }
-        $impresora->text("-------------------------------\n");
-        $impresora->feed(3);
-        $impresora->close();
+        $this->keys_products = [
+            '50161813' => '50161813 - Chocolate o sustituto de chocolate, confite',
+            '50161814' => '50161814 - Azúcar o sustituto de azúcar, confite (Gomitas)',
+            '50161815' => '50161815 - Goma de mascar',
+            '50161800' => '50161800 - Dulces de confite'
+        ];
     }
 
     public function printLabels()

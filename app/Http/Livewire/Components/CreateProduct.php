@@ -2,24 +2,21 @@
 
 namespace App\Http\Livewire\Components;
 
-use App\Models\Categoria;
 use App\Models\Producto;
-use Illuminate\Support\Str;
 use Livewire\Component;
 use Ramsey\Uuid\Generator\RandomGeneratorFactory;
 
 class CreateProduct extends Component
 {
+    public $keys_products = [];
     public $create = false;
-    public $producto, $categorias, $statusList;
-    public $categoria_id, $name, $slug, $description, $cost, $price, $stock, $status, $barcode;
+    public $producto, $statusList;
+    public $name, $key_product, $cost, $price, $stock, $status, $barcode;
     public $exist_barcode = 2;
 
     protected $rules = [
-        'categoria_id' => 'required',
         'name' => 'required',
-        'slug' => 'required|unique:productos,slug',
-        'description' => 'required',
+        'key_product' => 'required',
         'cost' => 'required',
         'price' => 'required',
         'stock' => 'required',
@@ -27,22 +24,17 @@ class CreateProduct extends Component
         'barcode' => 'required|unique:productos,barcode',
     ];
 
-    public function updatedName($value)
-    {
-        $this->slug = Str::slug($value);
-    }
-
     public function barCodeGenerated()
     {
         $this->reset('barcode');
 
         $suma = 0;
-        for ($i=0; $i < 7; $i++) {
-            $digit = random_int(1,9);
+        for ($i = 0; $i < 7; $i++) {
+            $digit = random_int(1, 9);
             $this->barcode = $this->barcode . $digit;
-            if ($i==0 or $i==2 or $i==4 or $i==6) {
-                $suma += $digit*3;
-            }else {
+            if ($i == 0 or $i == 2 or $i == 4 or $i == 6) {
+                $suma += $digit * 3;
+            } else {
                 $suma += $digit;
             }
         }
@@ -61,7 +53,7 @@ class CreateProduct extends Component
             $this->create = true;
         } else {
             $this->create = false;
-            $this->reset(['categoria_id', 'name', 'slug', 'description', 'cost', 'price', 'stock', 'status', 'barcode']);
+            $this->reset(['name', 'key_product', 'cost', 'price', 'stock', 'status', 'barcode']);
         }
     }
 
@@ -75,10 +67,8 @@ class CreateProduct extends Component
 
         $producto = new Producto();
 
-        $producto->categoria_id = $this->categoria_id;
         $producto->name = $this->name;
-        $producto->slug = $this->slug;
-        $producto->description = $this->description;
+        $producto->key_product = $this->key_product;
         $producto->cost = $this->cost;
         $producto->price = $this->price;
         $producto->stock = $this->stock;
@@ -86,14 +76,20 @@ class CreateProduct extends Component
         $producto->barcode = $this->barcode;
 
         $producto->save();
-        $this->reset(['categoria_id', 'name', 'slug', 'description', 'cost', 'price', 'stock', 'status', 'barcode', 'create', 'exist_barcode']);
+        $this->reset(['name', 'key_product', 'cost', 'price', 'stock', 'status', 'barcode', 'create', 'exist_barcode']);
         $this->emit('render');
+        $this->emit('alert', 'El producto se agrego correctamente');
     }
 
     public function mount()
     {
-        $this->categorias = Categoria::pluck('name', 'id');
         $this->statusList = ['1' => 'Activo', '2' => 'Inactivo'];
+        $this->keys_products = [
+            '50161813' => '50161813 - Chocolate o sustituto de chocolate, confite',
+            '50161814' => '50161814 - Azúcar o sustituto de azúcar, confite (Gomitas)',
+            '50161815' => '50161815 - Goma de mascar',
+            '50161800' => '50161800 - Dulces de confite'
+        ];
     }
 
     public function render()

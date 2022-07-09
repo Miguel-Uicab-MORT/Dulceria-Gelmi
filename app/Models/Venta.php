@@ -9,8 +9,12 @@ class Venta extends Model
 {
     use HasFactory;
 
-    const Faturable = 1;
-    const Nofaturable = 2;
+    const Facturable = 1;
+    const Nofacturable = 2;
+
+    const Efectivo = 1;
+    const Credito = 2;
+    const Debito = 3;
 
     protected $guarded = [
         'id',

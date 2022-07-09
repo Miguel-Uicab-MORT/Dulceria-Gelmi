@@ -1,58 +1,49 @@
 <div class="container p-3 mx-auto">
 
-    <div class="flex items-center p-3">
-        <div class="flex items-center flex-1">
-            <x-jet-input class="flex-1" wire:model="search" type="text" placeholder="Buscar producto" required
-                autofocus />
-        </div>
-        <x-jet-secondary-button class="ml-1" wire:click='printLabels'>
-            Generar Barcode
-        </x-jet-secondary-button>
-        @can('product.create')
-            <div class="ml-1">
-                @livewire('components.create-product')
+    <div class="p-3 mb-3 bg-white rounded-lg shadow-lg">
+        <div class="items-center block p-3 sm:flex">
+            <div class="flex items-center flex-1">
+                <x-jet-input class="flex-1" wire:model="search" type="text" placeholder="Buscar producto" required
+                    autofocus />
             </div>
-        @endcan
+            @can('product.create')
+                <div class="flex justify-center mt-1 sm:ml-1 sm:mt-0">
+                    @livewire('components.create-product')
+                </div>
+            @endcan
+        </div>
+        <section x-data="{ type_search: @entangle('type_search') }">
+            <div class="flex items-center ">
+                <div>
+                    <label class="ml-2">
+                        <input value="1" type="radio" x-model="type_search" name="type_search">
+                        <span class="mr-2">
+                            {{ __('ID') }}
+                        </span>
+                    </label>
+                    <label class="ml-2">
+                        <input value="2" type="radio" x-model="type_search" name="type_search">
+                        <span class="ml-2">
+                            {{ __('Código de barras') }}
+                        </span>
+                    </label>
+                    <label class="ml-2">
+                        <input value="3" type="radio" x-model="type_search" name="type_search">
+                        <span class="ml-2">
+                            {{ __('Nombre') }}
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </section>
     </div>
-    <section x-data="{ type_search: @entangle('type_search') }">
-        <div class="flex items-center p-3 mb-3 bg-white rounded-lg shadow-lg">
-            <div>
-                <label class="ml-2">
-                    <input value="1" type="radio" x-model="type_search" name="type_search">
-                    <span class="mr-2">
-                        {{ __('ID') }}
-                    </span>
-                </label>
-                <label class="ml-2">
-                    <input value="2" type="radio" x-model="type_search" name="type_search">
-                    <span class="ml-2">
-                        {{ __('Código de barras') }}
-                    </span>
-                </label>
-                <label class="ml-2">
-                    <input value="3" type="radio" x-model="type_search" name="type_search">
-                    <span class="ml-2">
-                        {{ __('Nombre') }}
-                    </span>
-                </label>
-                <label class="ml-2">
-                    <input value="4" type="radio" x-model="type_search" name="type_search">
-                    <span class="ml-2">
-                        {{ __('Descripción') }}
-                    </span>
-                </label>
-            </div>
-        </div>
-    </section>
 
     <div>
         <table class="w-full tables">
             <thead>
                 <th></th>
                 <th>CODIGOS</th>
-                <th>CATEGORIA</th>
                 <th>NOMBRE</th>
-                <th>DESCRIPCIÓN</th>
                 <th>ESTADO</th>
                 <th>EXISTENCIA</th>
                 <th>PRECIO</th>
@@ -68,14 +59,8 @@
                         <td class="text-center">
                             {{ $producto->barcode }}
                         </td>
-                        <td class="text-center">
-                            {{ $producto->categoria->name }}
-                        </td>
                         <td>
                             {{ $producto->name }}
-                        </td>
-                        <td>
-                            {{ $producto->description }}
                         </td>
                         <td class="text-center">
                             @switch($producto->status)
@@ -103,18 +88,13 @@
                             <b>$</b>{{ number_format($producto->price, 2, '.', ',') }}
                         </td>
                         <td class="flex justify-end">
-                            <div class="flex justify-center">
-                                <x-jet-button wire:click='printBarcode({{ $producto }})'>
-                                    <i class="text-xl fas fa-print"></i>
-                                </x-jet-button>
-                            </div>
                             @can('product.edit')
                                 <x-jet-secondary-button class="ml-1" wire:click='edit({{ $producto }})'>
                                     <i class="text-xl fas fa-edit"></i>
                                 </x-jet-secondary-button>
                             @endcan
                             @can('product.delete')
-                                <x-jet-danger-button class="ml-1" wire:click='delete({{ $producto }})'>
+                                <x-jet-danger-button class="ml-1" wire:click="$emit('destroy', {{ $producto->id }})">
                                     <i class="text-xl fas fa-trash"></i>
                                 </x-jet-danger-button>
                             @endcan
@@ -143,24 +123,14 @@
             {!! Form::open() !!}
             <div class="grid grid-cols-2 gap-5">
                 <div>
-                    <x-jet-label>Categoria:</x-jet-label>
-                    {!! Form::select('ecategoria_id', $categorias, null, ['wire:model' => 'producto.categoria_id', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="producto.categoria_id"></x-jet-input-error>
-                </div>
-                <div>
                     <x-jet-label>Nombre del producto:</x-jet-label>
                     {!! Form::text('ename', null, ['wire:model' => 'producto.name', 'class' => 'form-input']) !!}
                     <x-jet-input-error for="producto.name"></x-jet-input-error>
                 </div>
                 <div>
-                    <x-jet-label>Slug:</x-jet-label>
-                    {!! Form::text('eslug', null, ['wire:model' => 'producto.slug', 'class' => 'form-input', 'disabled']) !!}
-                    <x-jet-input-error for="producto.slug"></x-jet-input-error>
-                </div>
-                <div>
-                    <x-jet-label>Descripción:</x-jet-label>
-                    {!! Form::text('edescription', null, ['wire:model' => 'producto.description', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="producto.description"></x-jet-input-error>
+                    <x-jet-label>Clave del producto:</x-jet-label>
+                    {!! Form::select('ekey_product', $keys_products, null, ['wire:model' => 'producto.key_product', 'placeholder' => 'Elija una opción', 'class' => 'form-input']) !!}
+                    <x-jet-input-error for="producto.key_product"></x-jet-input-error>
                 </div>
                 <div>
                     <x-jet-label>Costo:</x-jet-label>
@@ -218,4 +188,39 @@
         </x-slot>
 
     </x-jet-dialog-modal>
+
+    @push('js')
+        <script>
+            Livewire.on('alert', function(message) {
+                Swal.fire(
+                    'Acción exitosa',
+                    message,
+                    'success'
+                )
+            })
+        </script>
+        <script>
+            Livewire.on('destroy', item => {
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "¡No podrás revertir esto!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '¡Si, bórralo!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.emitTo('inventory', 'delete', item)
+                        Swal.fire(
+                            '¡Eliminado!',
+                            'Su archivo ha sido eliminado.',
+                            'success'
+                        )
+                    }
+                })
+            })
+        </script>
+    @endpush
 </div>

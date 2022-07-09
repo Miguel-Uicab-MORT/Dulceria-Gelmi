@@ -17,14 +17,13 @@ class CreateProductosTable extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
 
-            $table->string('barcode');
             $table->string('name');
-            $table->string('description');
             $table->string('key_product');
-            $table->integer('stock');
             $table->float('cost');
             $table->float('price');
+            $table->integer('stock');
             $table->enum('status', [Producto::Activo, Producto::Inactivo])->default(Producto::Inactivo);
+            $table->string('barcode');
 
             $table->timestamps();
         });

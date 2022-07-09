@@ -6,40 +6,99 @@ use App\Models\Producto;
 use App\Models\Venta;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Livewire\Component;
-use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
-use Mike42\Escpos\Printer;
 
 class PaymentSale extends Component
 {
+    protected $listeners = ['render' => 'render', 'SaleFacturable', 'SaleNofacturable'];
+
     public $paymentModal = false;
     public $cambioModal = false;
-    public $ticket = 1;
-    public $subtotal = 0;
+
     public $total = 0;
-    public $recibido;
+    public $efectivo = 0;
+    public $debito = 0;
+    public $credito = 0;
+    public $recibido = 0;
     public $cambio = 0;
+
     public $costo = 0;
     public $ganancia = 0;
+    public $typePayment, $typeSale = Venta::Facturable;
     public $producto;
+
     protected $rules = [
         'recibido' => 'required',
     ];
 
-    public function updateTicket($value)
+    public function SaleFacturable()
     {
-        $this->ticket = $value;
+        $this->typeSale = Venta::Facturable;
+    }
+
+    public function SaleNofacturable()
+    {
+        $this->typeSale = Venta::Nofacturable;
+    }
+
+    public function updatedCredito()
+    {
+        if ($this->credito != null) {
+            if ($this->credito == null) {
+                $this->credito = 0;
+            }
+            if ($this->debito == null) {
+                $this->debito = 0;
+            }
+            if ($this->efectivo == null) {
+                $this->efectivo = 0;
+            }
+            $this->recibido = $this->credito + $this->debito + $this->efectivo;
+        }
+    }
+
+    public function updatedDebito()
+    {
+        if ($this->debito != null) {
+            if ($this->credito == null) {
+                $this->credito = 0;
+            }
+            if ($this->debito == null) {
+                $this->debito = 0;
+            }
+            if ($this->efectivo == null) {
+                $this->efectivo = 0;
+            }
+            $this->recibido = $this->credito + $this->debito + $this->efectivo;
+        }
+    }
+
+    public function updatedEfectivo()
+    {
+        if ($this->efectivo != null) {
+            if ($this->credito == null) {
+                $this->credito = 0;
+            }
+            if ($this->debito == null) {
+                $this->debito = 0;
+            }
+            if ($this->efectivo == null) {
+                $this->efectivo = 0;
+            }
+            $this->recibido = $this->credito + $this->debito + $this->efectivo;
+        }
     }
 
     public function paymentModal()
     {
         if ($this->paymentModal == false) {
+            $this->reset('total');
             $this->paymentModal = true;
-            $this->subtotal = Cart::subtotal();
-
+            foreach (Cart::content() as $item) {
+                $this->total += $item->qty * $item->price;
+            }
         } elseif ($this->paymentModal == true) {
             $this->paymentModal = false;
-            $this->subtotal = 0;
+            $this->total = 0;
         }
     }
 
@@ -57,24 +116,48 @@ class PaymentSale extends Component
 
     public function paymentSale()
     {
+        $this->reset('cambio', 'costo', 'ganancia');
+
         $this->validate();
 
         foreach (Cart::content() as $item) {
             $this->costo += $item->options->cost * $item->qty;
             $this->ganancia += $item->options->gain * $item->qty;
-            $this->total += $item->qty * $item->price;
         }
 
         $this->cambio = $this->recibido - $this->total;
+
+        if ($this->efectivo > $this->debito and $this->efectivo > $this->credito) {
+            $this->typePayment = Venta::Efectivo;
+        }elseif ($this->credito > $this->debito and $this->credito > $this->efectivo) {
+            $this->typePayment = Venta::Credito;
+        }elseif ($this->debito > $this->credito and $this->debito > $this->efectivo) {
+            $this->typePayment = Venta::Debito;
+        }
+
+        if ($this->credito == null) {
+            $this->credito = 0;
+        }
+        if ($this->debito == null) {
+            $this->debito = 0;
+        }
+        if ($this->efectivo == null) {
+            $this->efectivo = 0;
+        }
 
         $venta = new Venta();
 
         $venta->costo = $this->costo;
         $venta->total = $this->total;
         $venta->ganancia = $this->ganancia;
+        $venta->efectivo = $this->efectivo;
+        $venta->credito = $this->credito;
+        $venta->debito = $this->debito;
         $venta->recibido = $this->recibido;
         $venta->cambio = $this->cambio;
         $venta->content = Cart::content();
+        $venta->typePayment = $this->typePayment;
+        $venta->facturable = $this->typeSale;
         $venta->user_id = auth()->user()->id;
 
         $venta->save();
@@ -87,61 +170,17 @@ class PaymentSale extends Component
             if ($this->producto->stock == 0) {
                 $this->producto->status = Producto::Inactivo;
             }
+
+            $this->paymentModal = false;
             $this->producto->save();
         }
 
-        if ($this->ticket == 2) {
-            $this->printTicket($venta);
-        }
 
         $this->cambioModal();
     }
 
     public function printTicket(Venta $venta)
     {
-        $nombreImpresora = "MINIPRINT";
-        $connector = new WindowsPrintConnector($nombreImpresora);
-        $logo = EscposImage::load("img/logo-ticket.png");
-        $impresora = new Printer($connector);
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->bitImageColumnFormat($logo);
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->setEmphasis(true);
-        $impresora->text("Ticket de venta\n");
-        $impresora->text("FERRETERIA EL INGENIERO\n");
-        $impresora->setEmphasis(false);
-        $impresora->text("Col. 20 de noviembre, C. Francisco Imadero Entre Pino Suárez, CP: 24085\n");
-        $impresora->text("ruizgarciajoseignacio7@gmail.com\n");
-        $impresora->text("Cotizaciones: 9811385479\n");
-        $impresora->text("-------------------------------\n");
-        $impresora->setJustification(Printer::JUSTIFY_LEFT);
-        $impresora->text("Cajero:" . auth()->user()->name. "\n");
-        $impresora->text("Ticket: " . $venta->id . "\n");
-        $impresora->text($venta->created_at . "\n");
-        $impresora->text("-------------------------------\n");
-
-        $productos = json_decode($venta->content);
-
-        foreach ($productos as $producto) {
-            $subtotal = $producto->qty * $producto->price;
-            $impresora->setJustification(Printer::JUSTIFY_LEFT);
-            $impresora->text(sprintf("%.2fx%s\n", $producto->qty, $producto->name));
-            $impresora->setJustification(Printer::JUSTIFY_RIGHT);
-            $impresora->text('$' . number_format($subtotal, 2) . "\n");
-        }
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->text("-------------------------------\n");
-        $impresora->setJustification(Printer::JUSTIFY_RIGHT);
-        $impresora->setEmphasis(true);
-        $impresora->text("Total: $" . number_format($venta->total, 2) . "\n");
-        $impresora->text("Recibido: $" . number_format($venta->recibido, 2) . "\n");
-        $impresora->text("Cambio: $" . number_format($venta->cambio, 2) . "\n");
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->setTextSize(1, 1);
-        $impresora->text("Gracias por su compra\n");
-        $impresora->text("IR CONSTRUCCIONES");
-        $impresora->feed(2);
-        $impresora->close();
     }
 
     public function render()

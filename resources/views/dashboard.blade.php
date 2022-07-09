@@ -6,20 +6,7 @@
     </x-slot>
 
     <div class="grid grid-cols-1 gap-1 mt-6 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3 lg:gap-6">
-        @can('category.index')
-            <a href="{{ route('category.index') }}">
-                <div class="p-3 bg-white rounded-lg shadow-xl hover:bg-gray-300">
-                    <div class="flex justify-center">
-                        <img src="/img/6.png" class="object-cover w-40" alt="">
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold leading-tight text-center text-gray-800">
-                            Categorias
-                        </h1>
-                    </div>
-                </div>
-            </a>
-        @endcan
+
         @can('inventory.index')
             <a href="{{ route('inventory.index') }}">
                 <div class="p-3 bg-white rounded-lg shadow-xl hover:bg-gray-300">
@@ -61,7 +48,7 @@
                 </div>
             </a>
         @can('reports.index')
-            <a href="{{ route('reports.index') }}">
+            <a href="{{ route('sales.index') }}">
                 <div class="p-3 bg-white rounded-lg shadow-xl hover:bg-gray-300">
                     <div class="flex justify-center">
                         <img src="/img/3.png" class="object-cover w-40" alt="">
@@ -69,6 +56,18 @@
                     <div>
                         <h1 class="text-xl font-semibold leading-tight text-center text-gray-800">
                             Ventas
+                        </h1>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('reports.index') }}">
+                <div class="p-3 bg-white rounded-lg shadow-xl hover:bg-gray-300">
+                    <div class="flex justify-center">
+                        <img src="/img/3.png" class="object-cover w-40" alt="">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold leading-tight text-center text-gray-800">
+                            Cortes de caja
                         </h1>
                     </div>
                 </div>

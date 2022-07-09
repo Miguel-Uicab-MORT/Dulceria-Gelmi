@@ -1,1 +1,1 @@
-<img class="object-cover w-24 " src="/img/IRCONSTRUCCIONES.jpeg">
+<img class="object-cover w-24 " src="/img/logo-v2.png">

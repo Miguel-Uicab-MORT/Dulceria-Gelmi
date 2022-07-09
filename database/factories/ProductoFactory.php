@@ -22,14 +22,14 @@ class ProductoFactory extends Factory
         $cost = $this->faker->randomDigitNotNull();
 
         return [
-            'barcode' => $barcode,
+
             'name' => $name,
-            'description' => $this->faker->sentence(3),
             'key_product' => $this->faker->randomElement(['50161813', '50161814', '50161815 ', '50161800']),
             'stock' => $stock,
             'cost' => $cost,
             'price' => $cost + 2,
             'status' => Producto::Activo,
+            'barcode' => $barcode,
         ];
     }
 }

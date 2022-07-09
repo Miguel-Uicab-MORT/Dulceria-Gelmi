@@ -12,6 +12,7 @@ use App\Http\Livewire\Inventory;
 use App\Http\Livewire\PointSale;
 use App\Http\Livewire\Reports;
 use App\Http\Livewire\Roles;
+use App\Http\Livewire\Sales;
 use App\Http\Livewire\ShowSale;
 use App\Http\Livewire\Users;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +21,6 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('dashboard', DashboardController::class)->middleware('auth')->can('dashboard')->name('dashboard');
 
-Route::get('Category', Category::class)->middleware('auth')->can('category.index')->name('category.index');
-
 Route::get('Inventory', Inventory::class)->middleware('auth')->can('inventory.index')->name('inventory.index');
 
 Route::get('PointSale', PointSale::class)->middleware('auth')->can('pointsale.create')->name('pointsale.create');
@@ -29,6 +28,8 @@ Route::get('PointSale', PointSale::class)->middleware('auth')->can('pointsale.cr
 Route::get('Reports', Reports::class)->middleware('auth')->can('reports.index')->name('reports.index');
 
 Route::get('Reports/{venta}', ShowSale::class)->middleware('auth')->can('reports.show')->name('reports.show');
+
+Route::get('sales', Sales::class)->middleware('auth')->name('sales.index');
 
 Route::get('Users', Users::class)->middleware('auth')->can('users.index')->name('users.index');
 

@@ -3,8 +3,8 @@
 
         <div class="flex items-center p-3">
             <div class="flex items-center flex-1">
-                <x-jet-input class="flex-1" wire:model="search" type="text" placeholder="Buscar producto"
-                    required autofocus />
+                <x-jet-input class="flex-1" wire:model="search" type="text" placeholder="Buscar producto" required
+                    autofocus />
             </div>
             <div class="ml-2">
                 @livewire('components.create-client')
@@ -28,12 +28,6 @@
                     <label class="ml-2">
                         <input value="3" type="radio" x-model="type_search" name="type_search">
                         <span class="ml-2">
-                            {{ __('Número celular') }}
-                        </span>
-                    </label>
-                    <label class="ml-2">
-                        <input value="4" type="radio" x-model="type_search" name="type_search">
-                        <span class="ml-2">
                             {{ __('Email') }}
                         </span>
                     </label>
@@ -45,7 +39,6 @@
             <table class="w-full tables">
                 <thead>
                     <th>Nombre</th>
-                    <th>Número</th>
                     <th>Email</th>
                     <th>RFC</th>
                     <th></th>
@@ -56,12 +49,7 @@
                         <tr>
                             <td>
                                 <div class="px-3">
-                                    {{ $cliente->name . ' ' . $cliente->lastname }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="px-3">
-                                    {{ $cliente->number }}
+                                    {{ $cliente->businessname }}
                                 </div>
                             </td>
                             <td>
@@ -81,7 +69,7 @@
                                     </x-jet-secondary-button>
                                 @endcan
                                 @can('product.delete')
-                                    <x-jet-danger-button class="ml-1" wire:click='delete({{ $cliente }})'>
+                                    <x-jet-danger-button class="ml-1" wire:click="$emit('destroy', {{ $cliente->id }})">
                                         <i class="text-xl fas fa-trash"></i>
                                     </x-jet-danger-button>
                                 @endcan
@@ -110,24 +98,9 @@
                 {!! Form::open() !!}
                 <div class="grid grid-cols-2 gap-5">
                     <div>
-                        <x-jet-label>Nombre del cliente:</x-jet-label>
-                        {!! Form::text('name', null, ['wire:model' => 'cliente.name', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.name"></x-jet-input-error>
-                    </div>
-                    <div>
-                        <x-jet-label>Apellidos:</x-jet-label>
-                        {!! Form::text('lastname', null, ['wire:model' => 'cliente.lastname', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.lastname"></x-jet-input-error>
-                    </div>
-                    <div>
                         <x-jet-label>Razón Social:</x-jet-label>
                         {!! Form::text('businessname', null, ['wire:model' => 'cliente.businessname', 'class' => 'form-input']) !!}
                         <x-jet-input-error for="cliente.businessname"></x-jet-input-error>
-                    </div>
-                    <div>
-                        <x-jet-label>Número:</x-jet-label>
-                        {!! Form::text('number', null, ['wire:model' => 'cliente.number', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.number"></x-jet-input-error>
                     </div>
                     <div>
                         <x-jet-label>Email:</x-jet-label>
@@ -149,27 +122,6 @@
                         {!! Form::text('cp', null, ['wire:model' => 'cliente.cp', 'class' => 'form-input']) !!}
                         <x-jet-input-error for="cliente.cp"></x-jet-input-error>
                     </div>
-                    <div>
-                        <x-jet-label>Estado:</x-jet-label>
-                        {!! Form::text('state', null, ['wire:model' => 'cliente.state', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.state"></x-jet-input-error>
-                    </div>
-                    <div>
-                        <x-jet-label>Ciudad/Municipio:</x-jet-label>
-                        {!! Form::text('city', null, ['wire:model' => 'cliente.city', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.city"></x-jet-input-error>
-                    </div>
-                    <div>
-                        <x-jet-label>Colonia:</x-jet-label>
-                        {!! Form::text('colony', null, ['wire:model' => 'cliente.colony', 'class' => 'form-input']) !!}
-                        <x-jet-input-error for="cliente.colony"></x-jet-input-error>
-                    </div>
-                </div>
-
-                <div class="w-full mt-5">
-                    <x-jet-label>Direccion:</x-jet-label>
-                    {!! Form::text('cliente.address', null, ['wire:model' => 'cliente.address', 'class' => 'form-input']) !!}
-                    <x-jet-input-error for="cliente.address"></x-jet-input-error>
                 </div>
                 {!! Form::close() !!}
             </x-slot>
@@ -177,12 +129,47 @@
                 <x-jet-secondary-button class="mr-3" wire:click='edit({{ $cliente }})'>
                     Cancelar
                 </x-jet-secondary-button>
-                    <x-jet-button wire:click='update'>
-                        Actualizar
-                    </x-jet-button>
+                <x-jet-button wire:click='update'>
+                    Actualizar
+                </x-jet-button>
             </x-slot>
 
         </x-jet-dialog-modal>
 
     </div>
+
+    @push('js')
+        <script>
+            Livewire.on('alert', function(message) {
+                Swal.fire(
+                    'Acción exitosa',
+                    message,
+                    'success'
+                )
+            })
+        </script>
+        <script>
+            Livewire.on('destroy', item => {
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "¡No podrás revertir esto!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '¡Si, bórralo!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.emitTo('client', 'delete', item)
+                        Swal.fire(
+                            '¡Eliminado!',
+                            'Su archivo ha sido eliminado.',
+                            'success'
+                        )
+                    }
+                })
+            })
+        </script>
+    @endpush
 </div>

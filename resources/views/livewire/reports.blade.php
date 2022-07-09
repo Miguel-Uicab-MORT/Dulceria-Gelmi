@@ -1,137 +1,94 @@
-<div class="p-3">
-    <section x-data="{ type_search: @entangle('type_search') }">
+<div>
+    <div class="p-3 mb-3 bg-white rounded-lg shadow-lg">
+        <div class="items-center justify-between block md:flex">
+            <section x-data="{ caja: @entangle('caja') }">
+                <div class="items-center block p-3 md:flex">
+                    <div class="mr-1">
+                        <strong>Número de caja:</strong>
+                    </div>
+                    <label class="mr-1">
+                        <input value="1" type="radio" x-model="caja" name="caja">
+                        <span>
+                            {{ __('Caja 1') }}
+                        </span>
+                    </label>
+                    <label class="mr-1">
+                        <input value="2" type="radio" x-model="caja" name="caja">
+                        <span>
+                            {{ __('Caja 2') }}
+                        </span>
+                    </label>
+                </div>
+            </section>
+            <x-jet-button wire:click='create'>
+                Corte de caja
+            </x-jet-button>
 
-        <div class="flex items-center hidden p-3" :class="{ 'hidden': type_search == 2 }">
-            <x-jet-input class="flex-1" wire:model="search" type="text" placeholder="Buscar venta" required autofocus />
         </div>
-        <div class="flex items-center hidden p-3" :class="{ 'hidden': type_search == 1 }">
-            <x-jet-input class="flex-1" wire:model="search" type="date" placeholder="Buscar venta" required
-                autofocus />
-        </div>
-        <div class="flex items-center p-3 mb-3 bg-white rounded-lg shadow-lg">
-            <div>
-                <label class="mr-2">
-                    <input value="1" type="radio" x-model="type_search" name="type_search">
-                    <span class="ml-2">
-                        {{ __('ID de venta') }}
-                    </span>
-                </label>
-                <label class="ml-2">
-                    <input value="2" type="radio" x-model="type_search" name="type_search">
-                    <span class="ml-2">
-                        {{ __('Fecha de venta') }}
-                    </span>
-                </label>
-            </div>
-        </div>
-    </section>
+    </div>
 
-    <table class="tables">
-        <thead>
-            <th>
-                Ticket
-            </th>
-            <th>
-                Fecha
-            </th>
-            <th>
-                Costo
-            </th>
-            <th>
-                Total
-            </th>
-            <th>
-                Ganancia
-            </th>
-            @can('reports.print')
-                <th>
-                    Ticket
-                </th>
-            @endcan
-            @can('reports.show')
-                <th>
-                    Detalles
-                </th>
-            @endcan
-            @can('reports.delete')
-                <th>
-                    Eliminar
-                </th>
-            @endcan
-        </thead>
-        <tbody>
-            @foreach ($ventas as $venta)
-                <tr>
-                    <td>
-                        {{ $venta->id }}
-                    </td>
-                    <td>
-                        {{ Date::parse($venta->created_at)->locale('es')->format('l j F Y H:i:s') }}
-                    </td>
-                    <td class="font-bold text-center">
-                        <b>$</b>{{ number_format($venta->costo, 2, '.', ',') }}
-                    </td>
-                    <td class="font-bold text-center">
-                        <b>$</b>{{ number_format($venta->total, 2, '.', ',') }}
-                    </td>
-                    <td class="font-bold text-center">
-                        <b>$</b>{{ number_format($venta->ganancia, 2, '.', ',') }}
-                    </td>
-                    @can('reports.print')
-                        <td>
-                            <div class="flex justify-center">
-                                <x-jet-button wire:click='printTicket({{ $venta }})'>
-                                    <i class="text-xl fas fa-print"></i>
-                                </x-jet-button>
-                            </div>
-                        </td>
-                    @endcan
-                    @can('reports.show')
-                        <td>
-                            <div class="flex justify-center">
-                                <x-jet-secondary-button wire:click='SelectCliente({{$venta}})'>
-                                    <i class="text-xl fas fa-info"></i>
-                                </x-jet-secondary-button>
-                                <x-jet-secondary-button wire:click='show({{ $venta }})'>
-                                    <i class="text-xl fas fa-info"></i>
-                                </x-jet-secondary-button>
-                            </div>
-                        </td>
-                    @endcan
-                    @can('reports.delete')
-                        <td>
-                            <div class="flex justify-center">
-                                <x-jet-danger-button wire:click='delete({{ $venta }})'>
-                                    <i class="text-xl fas fa-trash"></i>
-                                </x-jet-danger-button>
-                            </div>
-                        </td>
-                    @endcan
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
 
-    <x-jet-dialog-modal wire:model='selectCliente'>
+    <x-jet-dialog-modal wire:model='create'>
 
         <x-slot name="title">
-            Editar Cliente
+            Corte de caja
         </x-slot>
+
         <x-slot name="content">
-            {!! Form::open() !!}
-            <div>
-                <x-jet-label>Categoria:</x-jet-label>
-                {!! Form::select('idClient', $clientes, null, ['wire:model' => 'idClient', 'placeholder' => 'Elija una opción', 'class' => 'form-input']) !!}
-                <x-jet-input-error for="idClient"></x-jet-input-error>
+
+            <div class="grid grid-cols-4 gap-3">
+
+                {!! Form::label('total', ' ', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Contado', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Calculado', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Diferencia', ['class' => 'font-bold text-sm text-center']) !!}
+
+                {!! Form::label('total', 'Efectivo', ['class' => 'font-bold text-sm text-center']) !!}
+                <x-jet-input class="flex-1" type="number" wire:model='c_Efectivo' required autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='tEfectivo' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='dEfectivo' required disabled autofocus />
+
+                {!! Form::label('total', 'T/Debito', ['class' => 'font-bold text-sm text-center']) !!}
+                <x-jet-input class="flex-1" type="number" wire:model='c_Debito' required autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='tDebito' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='dDebito' required disabled autofocus />
+
+                {!! Form::label('total', 'T/Credito', ['class' => 'font-bold text-sm text-center']) !!}
+                <x-jet-input class="flex-1" type="number" wire:model='c_Credito' required autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='tCredito' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='dCredito' required disabled autofocus />
+
+                {!! Form::label('total', 'Total', ['class' => 'font-bold text-sm text-center']) !!}
+                <x-jet-input class="flex-1" type="number" wire:model='c_Total' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='tTotal' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='dTotal' required disabled autofocus />
+
             </div>
-            {!! Form::close() !!}
+
+            <h1 class="font-bold text-center">
+                Retiro por corte
+            </h1>
+
+            <div class="grid grid-cols-4 gap-3">
+
+                {!! Form::label('total', 'Efectivo', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Tarjeta', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Total', ['class' => 'font-bold text-sm text-center']) !!}
+                {!! Form::label('total', 'Fondo', ['class' => 'font-bold text-sm text-center']) !!}
+
+                <x-jet-input class="flex-1" type="number" wire:model='r_Efectivo' required autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='r_Tarjeta' required autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='rTotal' required disabled autofocus />
+                <x-jet-input class="flex-1" type="number" wire:model='fondo' required disabled autofocus />
+
+
+            </div>
+
         </x-slot>
+
         <x-slot name="footer">
-            <x-jet-secondary-button class="mr-3" wire:click='selectCliente({{ $venta }})'>
-                Cancelar
-            </x-jet-secondary-button>
-            <x-jet-button wire:click='createFactura'>
-                Facturar
+            <x-jet-button wire:click='store'>
+                Hacer corte
             </x-jet-button>
         </x-slot>
 

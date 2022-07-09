@@ -16,12 +16,6 @@
                         {{ __('Inicio') }}
                     </x-jet-nav-link>
 
-                    @can('category.index')
-                        <x-jet-nav-link href="{{ route('category.index') }}" :active="request()->routeIs('category.index')">
-                            {{ __('Categorias') }}
-                        </x-jet-nav-link>
-                    @endcan
-
                     @can('inventory.index')
                         <x-jet-nav-link href="{{ route('inventory.index') }}" :active="request()->routeIs('inventory.index')">
                             {{ __('Inventario') }}
@@ -31,6 +25,12 @@
                     @can('pointsale.create')
                         <x-jet-nav-link href="{{ route('pointsale.create') }}" :active="request()->routeIs('pointsale.create')">
                             {{ __('Punto de Venta') }}
+                        </x-jet-nav-link>
+                    @endcan
+
+                    @can('reports.index')
+                        <x-jet-nav-link href="{{ route('sales.index') }}" :active="request()->routeIs('sales.index', 'reports.show')">
+                            {{ __('Ventas') }}
                         </x-jet-nav-link>
                     @endcan
 
@@ -178,15 +178,15 @@
                 {{ __('Dashboard') }}
             </x-jet-responsive-nav-link>
 
-            @can('category.index')
-            <x-jet-responsive-nav-link href="{{ route('category.index') }}" :active="request()->routeIs('category.index')">
-                {{ __('Categorias') }}
-            </x-jet-responsive-nav-link>
-            @endcan
-
             @can('inventory.index')
             <x-jet-responsive-nav-link href="{{ route('inventory.index') }}" :active="request()->routeIs('inventory.index')">
                 {{ __('Inventario') }}
+            </x-jet-responsive-nav-link>
+            @endcan
+
+            @can('reports.index')
+            <x-jet-responsive-nav-link href="{{ route('sales.index') }}" :active="request()->routeIs('sales.index')">
+                {{ __('Ventas') }}
             </x-jet-responsive-nav-link>
             @endcan
 

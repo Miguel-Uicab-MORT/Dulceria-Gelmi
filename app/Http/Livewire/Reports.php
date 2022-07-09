@@ -3,159 +3,139 @@
 namespace App\Http\Livewire;
 
 use App\Models\Cliente;
+use App\Models\Report;
 use App\Models\Venta;
-use Facturapi\Facturapi;
-use item;
+use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
-use Mike42\Escpos\Printer;
 
 class Reports extends Component
 {
     use WithPagination;
 
+    public $create = false;
+
+    public $tEfectivo = 0, $c_Efectivo = 0, $dEfectivo = 0;
+
+    public $tDebito = 0, $c_Debito = 0, $dDebito = 0;
+
+    public $tCredito = 0, $c_Credito = 0, $dCredito = 0;
+
+    public $tTotal, $c_Total = 0, $dTotal;
+
+    public $r_Efectivo = 0, $r_Debito = 0, $rTotal = 0, $fondo = 0;
+
+    public $latestCaja = 0;
+
     public $search;
-    public $venta;
-    public $type_search = 1, $selectSearch = "id";
-    public $idClient, $ventaSelect;
-    public $selectCliente = false;
+    public $caja = Report::Caja1;
 
-    public function SelectCliente(Venta $venta)
+    public function create()
     {
-        if ($this->selectCliente == false) {
-            $this->selectCliente = true;
-            $this->ventaSelect = $venta;
-        }else {
-            $this->selectCliente = false;
+        if ($this->create == false) {
+            $this->create = true;
+        } else {
+            $this->create = false;
         }
-
     }
 
-    public function createFactura()
-    {
-        $cliente = Cliente::find($this->idClient);
-        $productos = json_decode($this->ventaSelect->content);
-        $businessname = $cliente->businessname;
-        $email = $cliente->email;
-        $rfc = $cliente->rfc;
-        $cp = $cliente->cp;
-
-        $items = [];
-        $i = 0;
-
-
-
-        foreach ($productos as $producto) {
-            $items[$i] = [
-                "quantity" => $producto->qty,
-                "product" => [
-                    "description" => $producto->name,
-                    "product_key" => "60131324",
-                    "price" => $producto->price
-                ]
-            ];
-            $i++;
-        }
-
-        $facturapi = new Facturapi('sk_test_0w48olmaJpVqd3BZXnGmPkWdZY1RWgMAnQjbPzeO5y');
-
-        $invoice = $facturapi->Invoices->create([
-            "customer" => [
-                "legal_name" => $businessname,
-                "email" => $email,
-                "tax_id" => $rfc,
-                "tax_system" => "601",
-                "address" => [
-                    "zip" => $cp
-                ]
-            ],
-            "items" => $items,
-            "payment_form" => "28" // Tarjeta de crédito
-        ]);
-
-        $facturapi->Invoices->send_by_email($invoice->id);
-
-        $this->selectCliente($this->ventaSelect);
-    }
-
-    public function show(Venta $venta)
-    {
-        return redirect()->route('reports.show', $venta);
-    }
-
-    public function printTicket(Venta $venta)
-    {
-        $nombreImpresora = "MINIPRINT";
-        $connector = new WindowsPrintConnector($nombreImpresora);
-        $logo = EscposImage::load("img/logo-ticket.png");
-        $impresora = new Printer($connector);
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->bitImageColumnFormat($logo);
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->setEmphasis(true);
-        $impresora->text("Ticket de venta\n");
-        $impresora->text("FERRETERIA EL INGENIERO\n");
-        $impresora->setEmphasis(false);
-        $impresora->text("Col. 20 de noviembre, C. Francisco Imadero Entre Pino Suárez, CP: 24085\n");
-        $impresora->text("ruizgarciajoseignacio7@gmail.com\n");
-        $impresora->text("Cotizaciones: 9811385479\n");
-        $impresora->text("-------------------------------\n");
-        $impresora->setJustification(Printer::JUSTIFY_LEFT);
-        $impresora->text("Cajero:" . auth()->user()->name . "\n");
-        $impresora->text("Ticket: " . $venta->id . "\n");
-        $impresora->text($venta->created_at . "\n");
-        $impresora->text("-------------------------------\n");
-
-        $productos = json_decode($venta->content);
-
-        foreach ($productos as $producto) {
-            $subtotal = $producto->qty * $producto->price;
-            $impresora->setJustification(Printer::JUSTIFY_LEFT);
-            $impresora->text(sprintf("%.2fx%s\n", $producto->qty, $producto->name));
-            $impresora->setJustification(Printer::JUSTIFY_RIGHT);
-            $impresora->text('$' . number_format($subtotal, 2) . "\n");
-        }
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->text("-------------------------------\n");
-        $impresora->setJustification(Printer::JUSTIFY_RIGHT);
-        $impresora->setEmphasis(true);
-        $impresora->text("Total: $" . number_format($venta->total, 2) . "\n");
-        $impresora->text("Recibido: $" . number_format($venta->recibido, 2) . "\n");
-        $impresora->text("Cambio: $" . number_format($venta->cambio, 2) . "\n");
-        $impresora->setJustification(Printer::JUSTIFY_CENTER);
-        $impresora->setTextSize(1, 1);
-        $impresora->text("Gracias por su compra\n");
-        $impresora->text("IR CONSTRUCCIONES");
-        $impresora->feed(2);
-        $impresora->close();
-    }
-
-    public function delete(Venta $venta)
-    {
-        $venta->delete();
-        $this->render();
-    }
-
-    public function updatedTypeSearch($value)
+    public function updatedCaja($value)
     {
         if ($value == 1) {
-            $this->selectSearch = "id";
-            $this->search = "";
-        } elseif ($value == 2) {
-            $this->selectSearch = "created_at";
-            $this->search = "";
+            $this->caja = Report::Caja1;
+        }elseif ($value == 2) {
+            $this->caja = Report::Caja2;
         }
+    }
+
+    public function updatedCEfectivo()
+    {
+        if ($this->c_Efectivo != null) {
+            $this->dEfectivo = $this->c_Efectivo - $this->tEfectivo;
+            $this->c_Total = $this->c_Debito + $this->c_Efectivo;
+
+            $this->r_Efectivo = $this->c_Efectivo;
+            $this->rTotal = $this->r_Efectivo + $this->r_Debito;
+            $this->fondo = $this->c_Total - $this->rTotal + $this->latestCaja;
+        }
+    }
+
+    public function updatedCDebito()
+    {
+        if ($this->c_Debito != null) {
+            $this->dDebito = $this->c_Debito - $this->tDebito;
+            $this->c_Total = $this->c_Debito + $this->c_Efectivo;
+
+            $this->r_Debito = $this->c_Debito;
+            $this->rTotal = $this->r_Efectivo + $this->r_Debito;
+            $this->fondo = $this->c_Total - $this->rTotal + $this->latestCaja;
+        }
+    }
+
+    public function updatedREfectivo()
+    {
+        if ($this->r_Efectivo != null) {
+            $this->rTotal = $this->r_Efectivo + $this->r_Debito;
+            $this->fondo = $this->c_Total - $this->rTotal + $this->latestCaja;
+        }
+    }
+
+    public function updatedRDebito()
+    {
+        if ($this->r_Debito != null) {
+            $this->rTotal = $this->r_Efectivo + $this->r_Debito;
+            $this->fondo = $this->c_Total - $this->rTotal + $this->latestCaja;
+        }
+    }
+
+    public function store()
+    {
+        $corte = new Report();
+
+        $corte->efectivo = $this->c_Efectivo;
+        $corte->Debito = $this->c_Debito;
+        $corte->total = $this->c_Total;
+
+        $corte->rEfectivo = $this->r_Efectivo;
+        $corte->rDebito = $this->r_Debito;
+        $corte->rTotal = $this->rTotal;
+
+        $corte->dEfectivo = $this->dEfectivo;
+        $corte->dDebito = $this->dDebito;
+        $corte->dTotal = $this->dTotal;
+
+        $corte->fondo = $this->fondo;
+
+        $corte->user_id = auth()->user()->id;
+
+        $corte->save();
+        $this->create = false;
     }
 
     public function render()
     {
-        $ventas = Venta::where($this->selectSearch, 'LIKE', '%' . $this->search . '%')
-            ->orderBy($this->selectSearch, 'Desc')->paginate();
+        $today = Carbon::now()->format('Y-m-d');
 
-        $clientes = Cliente::pluck('businessname', 'id');
+        $cajero = auth()->user()->id;
 
-        return view('livewire.reports', compact('ventas', 'clientes'));
+        $report = Report::latest('created_at')->first();
+
+        if ($report != null) {
+            $this->latestCaja = $report->fondo;
+        }
+
+
+        $this->tEfectivo = Venta::whereDate('created_at', $today)
+            ->where('user_id', $cajero)
+            ->sum('efectivo');
+        $this->tDebito = Venta::whereDate('created_at', $today)
+            ->where('user_id', $cajero)
+            ->sum('debito');
+
+
+        $this->tTotal = $this->tDebito + $this->tEfectivo;
+        $this->dTotal = $this->dDebito + $this->dEfectivo;
+
+        return view('livewire.reports', compact('cajero', 'report'));
     }
 }
